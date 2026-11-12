@@ -20,11 +20,8 @@
    16. Library overrides (Leaflet, Lenis)
    17. Reduced motion
 
-   Accessibility notes
-   - Every text colour below is checked against its background for a contrast
-     ratio of at least 4.5:1 (most are above 7:1). Ratios are noted on the tokens.
-   - No text is set smaller than 15px, apart from map attribution and axis ticks.
-   - The serif is only used at 22px and above; everything smaller is the sans.
+   Accessibility: text colours meet 4.5:1 contrast (ratios are on the tokens),
+   no text is under 15px, and the serif is only used at 22px and above.
    ========================================================================== */
 
 
@@ -389,8 +386,7 @@ body {
   transform-origin: left;
 }
 
-/* cursor companion: a small tag beside the pointer that says what can be
-   done there. It sits below and to the right so it never covers the target. */
+/* cursor tag: a label beside the pointer, offset so it never covers the target */
 .cursor {
   display: none;
 }
@@ -442,7 +438,7 @@ body {
   transition: transform 0.5s var(--ease), background-color 0.3s, border-color 0.3s;
 }
 
-/* as soon as the page moves, the header gets a backing so nothing shows through */
+/* a backing appears once the page scrolls, so nothing shows through */
 .site-header.is-scrolled {
   background: rgba(245, 244, 240, 0.94);
   border-bottom-color: var(--line);
@@ -705,8 +701,7 @@ body {
   color: var(--ink-soft);
 }
 
-/* the focus caption: the destination the globe is facing, set under the
-   globe as a single quiet line so that nothing sits in front of it */
+/* focus caption: the destination the globe is facing, set below it */
 .focus {
   display: grid;
   grid-template-columns: 3.25rem minmax(0, 1fr);
@@ -728,9 +723,7 @@ body {
   object-fit: cover;
 }
 
-/* The name, the country line and each row of facts are masks: when the
-   destination changes, script.js slides their contents out of view and the
-   new contents in, so nothing simply blinks from one value to the next. */
+/* masks: script.js slides their contents out and in when the destination changes */
 .focus__name,
 .focus__country,
 .focus__facts div {
@@ -883,8 +876,7 @@ body {
 
 
 /* 9. Destinations (the six)
-   All six are on the page at once, in a plain grid: nothing to scroll
-   sideways or wait for. Each card is one link to its journey.
+   A plain grid of six cards; each card is one link to its journey.
    ========================================================================== */
 
 .places {
@@ -1320,8 +1312,7 @@ body {
     align-items: start;
   }
 
-  /* the map stays in view while the route beside it is read, and stops
-     at the end of this row so it can never slide over the charts */
+  /* sticky map: follows the route text and stops at the end of its row */
   .journey__side {
     position: sticky;
     top: 5.5rem;
@@ -1482,8 +1473,7 @@ body {
   margin-bottom: clamp(2rem, 4vw, 3.5rem);
 }
 
-/* the reel: a native sideways scroller, so swipes, the wheel, touch and the
-   keyboard all work without any script */
+/* the reel: a native sideways scroller, so swipe, wheel, touch and keys all work */
 .reel {
   overflow-x: auto;
   overscroll-behavior-x: contain;
@@ -1591,8 +1581,7 @@ body {
 
 
 /* 13. Closing photograph
-   A full-width photograph under a dark wash. The wash is strong enough that
-   white text keeps a contrast of at least 4.5:1 over the brightest sky.
+   The dark wash keeps white text above 4.5:1 over the brightest sky.
    ========================================================================== */
 
 .closing {

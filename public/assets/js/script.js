@@ -66,7 +66,7 @@
 
   const onSelect = (listener) => listeners.push(listener);
 
-  /* source says who asked: 'init', 'tour', 'globe', 'card', 'place', 'tab' or 'form' */
+  /* source: 'init', 'tour', 'globe', 'card', 'place', 'tab' or 'form' */
   function select(index, source) {
     const count = DESTINATIONS.length;
     const next = ((index % count) + count) % count;
@@ -138,7 +138,7 @@
     let lastY = window.scrollY;
     let ticking = false;
 
-    /* backed as soon as the page moves; hidden on the way down, back on the way up */
+    /* backed once scrolled; hides on the way down, returns on the way up */
     function update() {
       const y = window.scrollY;
       const open = nav.classList.contains('is-open');
@@ -214,9 +214,8 @@
 
 
   /* 6. Globe (Three.js)
-     A shaded sphere carrying a graticule, stippled land, coastlines and six
-     brass pins, inside a tilted meridian ring. The pin labels are ordinary
-     HTML buttons, positioned every frame by projecting each pin to the screen.
+     A shaded sphere with a graticule, stippled land, coastlines and six pins.
+     The pin labels are HTML buttons, placed by projecting each pin.
      ======================================================================== */
 
   function initGlobe() {
@@ -578,8 +577,7 @@
       pointer.y = -(event.clientY / window.innerHeight - 0.5) * 2;
     }, { passive: true });
 
-    /* --- the tour: move on to the next place every few seconds, unless the
-           visitor has just been using the globe --- */
+    /* --- the tour: advance every few seconds unless the globe was just used --- */
     let lastTouch = 0;
     function touched() {
       lastTouch = Date.now();
@@ -635,9 +633,7 @@
     };
     const source = (destination) => 'assets/images/destinations/' + destination.image + '-560.jpg';
 
-    /* Everything that moves when the destination changes, top to bottom:
-       the name, the country line, then each row of facts. Every group sits
-       inside an element that clips it, so it slides out of sight. */
+    /* what slides on a change: the name, the country line, then each fact row */
     const groups = $$('.focus__line', card).map((line) => [line])
       .concat($$('.focus__facts div', card).map((row) => Array.from(row.children)));
 
@@ -668,8 +664,7 @@
         return;
       }
 
-      /* Going forward, the old details leave upwards and the new ones rise
-         from below. Going back, it runs the other way. */
+      /* forward: old leaves upward, new rises from below; back: the reverse */
       const count = DESTINATIONS.length;
       const forward = (index - shown + count) % count <= count / 2;
       const exit = forward ? -1 : 1;
@@ -704,13 +699,11 @@
 
 
   /* 8. Destinations (the six)
-     A plain grid of six links. Choosing one sets the destination for the
-     whole page; the link itself then scrolls down to the journey.
+     Choosing a card sets the destination; its link scrolls to the journey.
      ======================================================================== */
 
   function initPlaces() {
-    /* No card is marked as chosen: a card only reacts while the pointer or
-       the keyboard focus is on it, so nothing looks highlighted by itself. */
+    /* cards react only to hover or focus; none is marked as chosen */
     $$('[data-select]').forEach((link) => {
       link.addEventListener('click', () => select(indexOfDestination(link.dataset.select), 'place'));
     });
@@ -737,8 +730,7 @@
       rows: $('#climate-rows')
     };
 
-    /* --- tabs: written in index.html in the same order as DESTINATIONS,
-           with the arrow-key behaviour people expect of tabs --- */
+    /* --- tabs: in index.html in DESTINATIONS order, with arrow-key support --- */
     const tabs = $$('.tabs__tab', tabList);
     tabs.forEach((tab, index) => {
       tab.addEventListener('click', () => select(index, 'tab'));
@@ -1007,9 +999,7 @@
 
 
   /* 10. Field notes reel
-     An ordinary sideways-scrolling row, so it answers to everything people
-     already use: a two-finger swipe, shift and the mouse wheel, a touch
-     swipe, the arrow keys, the two buttons, or dragging with the mouse.
+     A native sideways scroller: swipe, shift+wheel, touch, keys, buttons, drag.
      ======================================================================== */
 
   function initReel() {
@@ -1047,8 +1037,7 @@
     previous.addEventListener('click', () => reel.scrollBy({ left: -stride(), behavior: behavior }));
     next.addEventListener('click', () => reel.scrollBy({ left: stride(), behavior: behavior }));
 
-    /* A sideways swipe belongs to the reel. Keeping it from the smooth
-       scroller stops the page moving up and down at the same time. */
+    /* keep sideways swipes from the smooth scroller so the page stays still */
     reel.addEventListener('wheel', (event) => {
       if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) event.stopPropagation();
     }, { passive: true });
@@ -1123,8 +1112,7 @@
       new Cleave('#budget', { numeral: true, numeralDecimalScale: 0, numeralPositiveOnly: true });
     }
 
-    /* "03/2027" -> { month: 3, year: 2027 }, or null. The slash is optional
-       because Cleave adds it a moment after each keystroke. */
+    /* "03/2027" -> { month: 3, year: 2027 } or null; the slash is optional */
     const parseMonth = (text) => {
       const match = /^(\d{2})\/?(\d{4})$/.exec(text.trim());
       if (!match) return null;
@@ -1173,8 +1161,7 @@
       input.addEventListener('input', () => { if (input.getAttribute('aria-invalid') === 'true') validate(key); });
     });
 
-    /* Say whether the chosen month suits the chosen place, from the same
-       data that draws the climate charts. */
+    /* advise on the chosen month, using the same data as the climate charts */
     function advise() {
       const when = parseMonth(fields.when.value);
       const destination = DESTINATIONS[indexOfDestination(destinationField.value)];

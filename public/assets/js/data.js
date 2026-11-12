@@ -9,9 +9,8 @@
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'];
 
-/* The six destinations, in the order they appear on the page. The id of
-   each one matches a data-destination attribute in index.html. inProse is
-   the name as it reads mid-sentence, where that differs from the name. */
+/* The six destinations, in page order. id matches data-destination in
+   index.html; inProse is the name as written mid-sentence. */
 const DESTINATIONS = [
   {
     id: 'kyoto',
