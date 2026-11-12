@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meridian | Private journeys to six places</title>
+  <meta name="description" content="Meridian is a small travel studio that plans private journeys to six destinations: Kyoto, the Amalfi Coast, the Serengeti, Patagonia, Bora Bora and Iceland.">
+  <meta name="author" content="Araik Movsessian">
+  <meta name="theme-color" content="#f5f4f0">
+  <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
+
+  <!-- fonts: Newsreader for display, Hanken Grotesk for text -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400..500&amp;family=Hanken+Grotesk:wght@400..600&amp;display=swap">
+
+  <!-- library styles, then our own so it can override them -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ===== opening curtain, removed by script once the page is ready ===== -->
+  <div class="loader" id="loader" aria-hidden="true">
+    <p class="loader__mark">Meridian</p>
+    <p class="loader__count"><span id="loader-count">0</span>&deg;</p>
+    <span class="loader__line" id="loader-line"></span>
+  </div>
+
+  <!-- ===== cursor companion, shown on devices with a mouse ===== -->
+  <div class="cursor" id="cursor" aria-hidden="true">
+    <span class="cursor__label" id="cursor-label"></span>
+  </div>
+
+  <!-- ===== site header ===== -->
+  <header class="site-header" id="site-header">
+    <a class="brand" href="#top" aria-label="Meridian, back to top">
+      <svg class="brand__mark" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <circle cx="12" cy="12" r="10.5" fill="none" stroke="currentColor"/>
+        <ellipse cx="12" cy="12" rx="4.5" ry="10.5" fill="none" stroke="currentColor"/>
+        <path d="M1.5 12h21" fill="none" stroke="currentColor"/>
+      </svg>
+      <span class="brand__name">Meridian</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+    <nav class="site-nav" id="site-nav" aria-label="Primary">
+      <ul class="site-nav__list">
+        <li><a href="#destinations">Destinations</a></li>
+        <li><a href="#journey">Journeys</a></li>
+        <li><a href="#approach">Approach</a></li>
+        <li><a href="#field">Field notes</a></li>
+        <li><a class="site-nav__cta" href="#inquire">Inquire</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main">
+
+    <!-- ===== hero: a globe you can turn, with six places pinned to it ===== -->
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="wrap hero__grid">
+        <div class="hero__copy">
+          <h1 class="hero__title" id="hero-title">Six places worth crossing the world for.</h1>
+          <p class="hero__lede" data-hero>
+            Meridian plans private journeys to six destinations and nowhere else. Turn the globe, choose a place,
+            and we will arrange the rest: the guides, the rooms, the tables and the boats.
+          </p>
+          <div class="hero__actions" data-hero>
+            <a class="button" href="#destinations">See the six destinations <svg class="button__icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+            <a class="text-link" href="#inquire">Plan a journey</a>
+          </div>
+        </div>
+
+        <div class="hero__stage" data-hero>
+          <div class="globe" id="globe">
+            <canvas class="globe__canvas" id="globe-canvas" data-cursor="Drag to turn" aria-hidden="true"></canvas>
+            <ul class="globe__pins" id="globe-pins" aria-label="Destinations on the globe"></ul>
+          </div>
+          <p class="globe__hint">Drag to turn the globe</p>
+
+          <article class="focus" id="focus" aria-labelledby="focus-name">
+            <figure class="focus__media arch">
+              <img id="focus-image" src="assets/images/destinations/kyoto-560.jpg" width="560" height="700" alt="">
+            </figure>
+            <div class="focus__body">
+              <h2 class="focus__name" id="focus-name"><span class="focus__line" id="focus-name-text">Kyoto</span></h2>
+              <p class="focus__country"><span class="focus__line"><span id="focus-country">Japan</span>, <span id="focus-number">1</span> of 6</span></p>
+              <dl class="focus__facts">
+                <div>
+                  <dt>Local time</dt>
+                  <dd id="focus-time">00:00</dd>
+                </div>
+                <div>
+                  <dt>Best</dt>
+                  <dd id="focus-season">March to May, October and November</dd>
+                </div>
+              </dl>
+            </div>
+            <div class="focus__actions">
+              <div class="stepper">
+                <button class="stepper__button" id="focus-prev" type="button" aria-label="Previous destination">
+                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button class="stepper__button" id="focus-next" type="button" aria-label="Next destination">
+                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9.5 5.5 16 12l-6.5 6.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+              <a class="text-link" id="focus-link" href="#journey">View the journey</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== who we are: one statement that fills in as you scroll ===== -->
+    <section class="statement" aria-labelledby="statement-title">
+      <div class="wrap statement__grid">
+        <h2 class="statement__text" id="statement-title">
+          We are a small studio of travel planners. We know six places extremely well, we go back to each of them
+          every year, and we plan every journey ourselves, one at a time.
+        </h2>
+        <ul class="promises">
+          <li class="promises__item" data-reveal>
+            <h3>One planner</h3>
+            <p>The person you first speak to plans the whole journey and answers the phone while you are away.</p>
+          </li>
+          <li class="promises__item" data-reveal>
+            <h3>Forty journeys a year</h3>
+            <p>We take on no more than that, so each one gets the attention it needs.</p>
+          </li>
+          <li class="promises__item" data-reveal>
+            <h3>Nothing off the shelf</h3>
+            <p>Every route below is a starting point. Yours will be drawn up around your dates and your pace.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ===== destinations: all six at once, each one a link to its journey ===== -->
+    <section class="places" id="destinations" aria-labelledby="places-title">
+      <div class="wrap">
+        <header class="places__head">
+          <h2 class="display" id="places-title" data-split>The six</h2>
+          <p class="lede">Chosen because we know them better than anywhere else, and because each is at its best at a different time of year. Select one to see the journey.</p>
+        </header>
+
+        <ul class="places__grid">
+          <li class="place" data-destination="kyoto">
+            <a class="place__link" href="#journey" data-select="kyoto" data-cursor="View the journey">
+              <figure class="place__media arch">
+                <img src="assets/images/destinations/kyoto-560.jpg" srcset="assets/images/destinations/kyoto-560.jpg 560w, assets/images/destinations/kyoto-1000.jpg 1000w" sizes="(min-width: 64em) 26vw, 46vw" width="560" height="700" loading="lazy" alt="A five-storey pagoda at the end of a narrow Kyoto street">
+              </figure>
+              <div class="place__body">
+                <h3 class="place__name">Kyoto</h3>
+                <p class="place__country">Japan</p>
+                <span class="place__arrow" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <p class="place__text">Temples, tea houses and a ryokan by the sea.</p>
+                <p class="place__season">Best in March to May, October and November</p>
+              </div>
+            </a>
+          </li>
+
+          <li class="place" data-destination="amalfi">
+            <a class="place__link" href="#journey" data-select="amalfi" data-cursor="View the journey">
+              <figure class="place__media arch">
+                <img src="assets/images/destinations/amalfi-560.jpg" srcset="assets/images/destinations/amalfi-560.jpg 560w, assets/images/destinations/amalfi-1000.jpg 1000w" sizes="(min-width: 64em) 26vw, 46vw" width="560" height="700" loading="lazy" alt="The pastel houses of Positano stacked up a cliff above the beach">
+              </figure>
+              <div class="place__body">
+                <h3 class="place__name">Amalfi Coast</h3>
+                <p class="place__country">Italy</p>
+                <span class="place__arrow" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <p class="place__text">Cliffside villages, seen from the water.</p>
+                <p class="place__season">Best in May, June, September and October</p>
+              </div>
+            </a>
+          </li>
+
+          <li class="place" data-destination="serengeti">
+            <a class="place__link" href="#journey" data-select="serengeti" data-cursor="View the journey">
+              <figure class="place__media arch">
+                <img src="assets/images/destinations/serengeti-560.jpg" srcset="assets/images/destinations/serengeti-560.jpg 560w, assets/images/destinations/serengeti-1000.jpg 1000w" sizes="(min-width: 64em) 26vw, 46vw" width="560" height="700" loading="lazy" alt="A lone acacia tree on the Serengeti plain at sunrise">
+              </figure>
+              <div class="place__body">
+                <h3 class="place__name">Serengeti</h3>
+                <p class="place__country">Tanzania</p>
+                <span class="place__arrow" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <p class="place__text">The great migration, from a tented camp.</p>
+                <p class="place__season">Best from June to October</p>
+              </div>
+            </a>
+          </li>
+
+          <li class="place" data-destination="patagonia">
+            <a class="place__link" href="#journey" data-select="patagonia" data-cursor="View the journey">
+              <figure class="place__media arch">
+                <img src="assets/images/destinations/patagonia-560.jpg" srcset="assets/images/destinations/patagonia-560.jpg 560w, assets/images/destinations/patagonia-1000.jpg 1000w" sizes="(min-width: 64em) 26vw, 46vw" width="560" height="700" loading="lazy" alt="A walker beside a glacial lake beneath the granite towers of Torres del Paine">
+              </figure>
+              <div class="place__body">
+                <h3 class="place__name">Patagonia</h3>
+                <p class="place__country">Chile</p>
+                <span class="place__arrow" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <p class="place__text">Granite towers and blue ice, on foot.</p>
+                <p class="place__season">Best from November to March</p>
+              </div>
+            </a>
+          </li>
+
+          <li class="place" data-destination="bora-bora">
+            <a class="place__link" href="#journey" data-select="bora-bora" data-cursor="View the journey">
+              <figure class="place__media arch">
+                <img src="assets/images/destinations/bora-bora-560.jpg" srcset="assets/images/destinations/bora-bora-560.jpg 560w, assets/images/destinations/bora-bora-1000.jpg 1000w" sizes="(min-width: 64em) 26vw, 46vw" width="560" height="700" loading="lazy" alt="Thatched villas on stilts over a turquoise lagoon in Bora Bora">
+              </figure>
+              <div class="place__body">
+                <h3 class="place__name">Bora Bora</h3>
+                <p class="place__country">French Polynesia</p>
+                <span class="place__arrow" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <p class="place__text">Four islands and a villa over the lagoon.</p>
+                <p class="place__season">Best from May to October</p>
+              </div>
+            </a>
+          </li>
+
+          <li class="place" data-destination="iceland">
+            <a class="place__link" href="#journey" data-select="iceland" data-cursor="View the journey">
+              <figure class="place__media arch">
+                <img src="assets/images/destinations/iceland-560.jpg" srcset="assets/images/destinations/iceland-560.jpg 560w, assets/images/destinations/iceland-1000.jpg 1000w" sizes="(min-width: 64em) 26vw, 46vw" width="560" height="700" loading="lazy" alt="A tall, narrow waterfall dropping into a mossy Icelandic gorge">
+              </figure>
+              <div class="place__body">
+                <h3 class="place__name">Iceland</h3>
+                <p class="place__country">North Atlantic</p>
+                <span class="place__arrow" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <p class="place__text">Waterfalls, icebergs and the empty highlands.</p>
+                <p class="place__season">Best from June to September</p>
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ===== journey: itinerary, map and climate for the chosen place ===== -->
+    <section class="journey" id="journey" aria-labelledby="journey-heading">
+      <div class="wrap">
+        <header class="journey__head">
+          <h2 class="display" id="journey-heading" data-split>One journey, in detail</h2>
+          <p class="lede">Choose a destination to see the route we would start from, where you would sleep, and when to go.</p>
+        </header>
+
+        <div class="tabs" id="journey-tabs" role="tablist" aria-label="Destinations">
+          <button class="tabs__tab" id="journey-tab-kyoto" type="button" role="tab" aria-selected="true" aria-controls="journey-panel">Kyoto</button>
+          <button class="tabs__tab" id="journey-tab-amalfi" type="button" role="tab" aria-selected="false" aria-controls="journey-panel" tabindex="-1">Amalfi Coast</button>
+          <button class="tabs__tab" id="journey-tab-serengeti" type="button" role="tab" aria-selected="false" aria-controls="journey-panel" tabindex="-1">Serengeti</button>
+          <button class="tabs__tab" id="journey-tab-patagonia" type="button" role="tab" aria-selected="false" aria-controls="journey-panel" tabindex="-1">Patagonia</button>
+          <button class="tabs__tab" id="journey-tab-bora-bora" type="button" role="tab" aria-selected="false" aria-controls="journey-panel" tabindex="-1">Bora Bora</button>
+          <button class="tabs__tab" id="journey-tab-iceland" type="button" role="tab" aria-selected="false" aria-controls="journey-panel" tabindex="-1">Iceland</button>
+        </div>
+
+        <div class="journey__panel" id="journey-panel" role="tabpanel" aria-labelledby="journey-tab-kyoto" tabindex="0">
+          <div class="journey__top">
+            <div class="journey__main">
+              <p class="journey__place" id="journey-place">Kyoto, Japan</p>
+              <h3 class="journey__title" id="journey-title">Kyoto and the Inland Sea</h3>
+              <p class="journey__summary" id="journey-summary">Temples opened before the crowds arrive, an art island reached by ferry, and two nights in a ryokan where dinner is brought to your room.</p>
+
+              <dl class="facts">
+                <div class="facts__item">
+                  <dt>Length</dt>
+                  <dd id="journey-nights">9 nights</dd>
+                </div>
+                <div class="facts__item">
+                  <dt>Guide price</dt>
+                  <dd id="journey-price">From $9,400 each</dd>
+                </div>
+                <div class="facts__item">
+                  <dt>Best months</dt>
+                  <dd id="journey-season">March to May, October and November</dd>
+                </div>
+              </dl>
+
+              <h4 class="journey__sub">The route</h4>
+              <ol class="stops" id="journey-stops">
+                <li>
+                  <button class="stops__stop" type="button">
+                    <span class="stops__number">1</span>
+                    <span class="stops__name"><span>Kyoto</span><span class="stops__nights">4 nights</span></span>
+                    <span class="stops__text">A townhouse in Higashiyama, a tea master, and Kiyomizu-dera at first light.</span>
+                  </button>
+                </li>
+                <li>
+                  <button class="stops__stop" type="button">
+                    <span class="stops__number">2</span>
+                    <span class="stops__name"><span>Nara</span><span class="stops__nights">Day visit</span></span>
+                    <span class="stops__text">A day among the deer and the great bronze Buddha, with a guide who grew up here.</span>
+                  </button>
+                </li>
+                <li>
+                  <button class="stops__stop" type="button">
+                    <span class="stops__number">3</span>
+                    <span class="stops__name"><span>Naoshima</span><span class="stops__nights">2 nights</span></span>
+                    <span class="stops__text">Museums set into the hillside and a room where the art stays lit after closing.</span>
+                  </button>
+                </li>
+                <li>
+                  <button class="stops__stop" type="button">
+                    <span class="stops__number">4</span>
+                    <span class="stops__name"><span>Kinosaki Onsen</span><span class="stops__nights">3 nights</span></span>
+                    <span class="stops__text">Seven bathhouses along a willow-lined canal, visited in a cotton robe and wooden sandals.</span>
+                  </button>
+                </li>
+              </ol>
+            </div>
+
+            <div class="journey__side">
+              <div class="journey__map arch">
+                <div class="journey__map-canvas" id="journey-map" role="region" aria-label="Map of the route"></div>
+              </div>
+            </div>
+          </div>
+
+          <figure class="climate">
+            <figcaption class="climate__caption">
+              <h4 class="journey__sub">When to go</h4>
+              <p id="climate-note">The months we recommend are marked in gold.</p>
+            </figcaption>
+            <div class="climate__charts">
+              <div class="climate__chart">
+                <p class="climate__label">Average daytime high, &deg;C</p>
+                <div class="climate__plot"><canvas id="chart-highs" role="img" aria-label="Line chart of the average daytime high for each month"></canvas></div>
+              </div>
+              <div class="climate__chart">
+                <p class="climate__label">Rainfall, mm</p>
+                <div class="climate__plot"><canvas id="chart-rain" role="img" aria-label="Bar chart of the average rainfall for each month"></canvas></div>
+              </div>
+            </div>
+            <details class="climate__table">
+              <summary>View the numbers as a table</summary>
+              <table>
+                <caption class="visually-hidden">Monthly climate for the chosen destination</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Month</th>
+                    <th scope="col">High, &deg;C</th>
+                    <th scope="col">Rain, mm</th>
+                    <th scope="col">Recommended</th>
+                  </tr>
+                </thead>
+                <tbody id="climate-rows"></tbody>
+              </table>
+            </details>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== approach: three steps beside a layered set of photographs ===== -->
+    <section class="approach" id="approach" aria-labelledby="approach-title">
+      <div class="wrap approach__grid">
+        <div class="approach__copy">
+          <h2 class="display" id="approach-title" data-split>How a journey comes together</h2>
+          <ol class="steps">
+            <li class="steps__item" data-reveal>
+              <h3>A conversation</h3>
+              <p>An hour by phone or in person. We ask how you like to travel, what you have loved before and what you would rather avoid.</p>
+            </li>
+            <li class="steps__item" data-reveal>
+              <h3>A journey, drawn up</h3>
+              <p>Within a week you receive a day-by-day plan with rooms, guides and prices. We revise it until it is right.</p>
+            </li>
+            <li class="steps__item" data-reveal>
+              <h3>Travel, looked after</h3>
+              <p>Your planner stays on call from departure to return, and quietly fixes whatever needs fixing.</p>
+            </li>
+          </ol>
+        </div>
+
+        <div class="collage" id="collage" aria-hidden="true">
+          <figure class="collage__item collage__item--back arch" data-depth="-40">
+            <img src="assets/images/approach/sea-window-520.jpg" srcset="assets/images/approach/sea-window-520.jpg 520w, assets/images/approach/sea-window-900.jpg 900w" sizes="(min-width: 64em) 26vw, 60vw" width="520" height="650" loading="lazy" alt="">
+          </figure>
+          <figure class="collage__item collage__item--front" data-depth="50">
+            <img src="assets/images/approach/planning-520.jpg" srcset="assets/images/approach/planning-520.jpg 520w, assets/images/approach/planning-900.jpg 900w" sizes="(min-width: 64em) 18vw, 42vw" width="520" height="693" loading="lazy" alt="">
+          </figure>
+          <figure class="collage__item collage__item--low" data-depth="90">
+            <img src="assets/images/approach/seaplane-520.jpg" srcset="assets/images/approach/seaplane-520.jpg 520w, assets/images/approach/seaplane-900.jpg 900w" sizes="(min-width: 64em) 20vw, 46vw" width="520" height="347" loading="lazy" alt="">
+          </figure>
+          <svg class="collage__seal" id="seal" viewBox="0 0 200 200" width="200" height="200">
+            <defs>
+              <path id="seal-path" d="M100 100m-78 0a78 78 0 1 1 156 0a78 78 0 1 1-156 0"/>
+            </defs>
+            <text><textPath href="#seal-path">Private journeys &#8226; Planned by hand &#8226; Six places &#8226; </textPath></text>
+            <circle cx="100" cy="100" r="46" fill="none" stroke="currentColor" stroke-width="0.6"/>
+            <ellipse cx="100" cy="100" rx="20" ry="46" fill="none" stroke="currentColor" stroke-width="0.6"/>
+            <path d="M54 100h92" fill="none" stroke="currentColor" stroke-width="0.6"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== field notes: a row of photographs that scrolls sideways ===== -->
+    <section class="field" id="field" aria-labelledby="field-title">
+      <div class="wrap">
+        <header class="field__head">
+          <h2 class="display" id="field-title" data-split>From the field</h2>
+          <p class="lede">Photographs from our planners' most recent visits. Scroll sideways to browse, and select any of them to see it full screen.</p>
+        </header>
+      </div>
+
+      <div class="reel" id="field-reel" role="region" aria-label="Field photographs. Scroll sideways to see more." tabindex="0" data-cursor="Scroll or drag">
+        <ul class="reel__track">
+          <li class="reel__item">
+            <a class="shot" href="assets/images/field/torii-gates-full.jpg" data-fslightbox="field" data-type="image" data-alt="A path through rows of vermilion torii gates">
+              <figure class="shot__media"><img src="assets/images/field/torii-gates-560.jpg" srcset="assets/images/field/torii-gates-560.jpg 560w, assets/images/field/torii-gates-900.jpg 900w" sizes="(min-width: 64em) 24vw, (min-width: 40em) 40vw, 76vw" width="560" height="747" loading="lazy" alt="A path through rows of vermilion torii gates"></figure>
+              <p class="shot__place">Fushimi Inari, Kyoto</p>
+              <p class="shot__note">Before seven in the morning the gates are yours.</p>
+            </a>
+          </li>
+          <li class="reel__item">
+            <a class="shot" href="assets/images/field/beach-umbrellas-full.jpg" data-fslightbox="field" data-type="image" data-alt="Rows of beach umbrellas seen from above">
+              <figure class="shot__media"><img src="assets/images/field/beach-umbrellas-560.jpg" srcset="assets/images/field/beach-umbrellas-560.jpg 560w, assets/images/field/beach-umbrellas-900.jpg 900w" sizes="(min-width: 64em) 24vw, (min-width: 40em) 40vw, 76vw" width="560" height="747" loading="lazy" alt="Rows of beach umbrellas seen from above"></figure>
+              <p class="shot__place">Positano, Italy</p>
+              <p class="shot__note">The beach club keeps two loungers back for us.</p>
+            </a>
+          </li>
+          <li class="reel__item">
+            <a class="shot" href="assets/images/field/giraffes-full.jpg" data-fslightbox="field" data-type="image" data-alt="Two giraffes with their necks crossed on the savannah">
+              <figure class="shot__media"><img src="assets/images/field/giraffes-560.jpg" srcset="assets/images/field/giraffes-560.jpg 560w, assets/images/field/giraffes-900.jpg 900w" sizes="(min-width: 64em) 24vw, (min-width: 40em) 40vw, 76vw" width="560" height="747" loading="lazy" alt="Two giraffes with their necks crossed on the savannah"></figure>
+              <p class="shot__place">Central Serengeti, Tanzania</p>
+              <p class="shot__note">Seen on the drive in from the airstrip.</p>
+            </a>
+          </li>
+          <li class="reel__item">
+            <a class="shot" href="assets/images/field/torres-peaks-full.jpg" data-fslightbox="field" data-type="image" data-alt="The jagged peaks of the Paine massif above a blue lake">
+              <figure class="shot__media"><img src="assets/images/field/torres-peaks-560.jpg" srcset="assets/images/field/torres-peaks-560.jpg 560w, assets/images/field/torres-peaks-900.jpg 900w" sizes="(min-width: 64em) 24vw, (min-width: 40em) 40vw, 76vw" width="560" height="747" loading="lazy" alt="The jagged peaks of the Paine massif above a blue lake"></figure>
+              <p class="shot__place">Torres del Paine, Chile</p>
+              <p class="shot__note">The view from the lodge on a clear morning.</p>
+            </a>
+          </li>
+          <li class="reel__item">
+            <a class="shot" href="assets/images/field/lagoon-boardwalk-full.jpg" data-fslightbox="field" data-type="image" data-alt="A wooden boardwalk leading to villas over a lagoon">
+              <figure class="shot__media"><img src="assets/images/field/lagoon-boardwalk-560.jpg" srcset="assets/images/field/lagoon-boardwalk-560.jpg 560w, assets/images/field/lagoon-boardwalk-900.jpg 900w" sizes="(min-width: 64em) 24vw, (min-width: 40em) 40vw, 76vw" width="560" height="747" loading="lazy" alt="A wooden boardwalk leading to villas over a lagoon"></figure>
+              <p class="shot__place">Bora Bora, French Polynesia</p>
+              <p class="shot__note">The walk to breakfast.</p>
+            </a>
+          </li>
+          <li class="reel__item">
+            <a class="shot" href="assets/images/field/glacier-ice-full.jpg" data-fslightbox="field" data-type="image" data-alt="A block of blue glacier ice floating on still water">
+              <figure class="shot__media"><img src="assets/images/field/glacier-ice-560.jpg" srcset="assets/images/field/glacier-ice-560.jpg 560w, assets/images/field/glacier-ice-900.jpg 900w" sizes="(min-width: 64em) 24vw, (min-width: 40em) 40vw, 76vw" width="560" height="747" loading="lazy" alt="A block of blue glacier ice floating on still water"></figure>
+              <p class="shot__place">J&ouml;kuls&aacute;rl&oacute;n, Iceland</p>
+              <p class="shot__note">Ice that broke from the glacier a week earlier.</p>
+            </a>
+          </li>
+          <li class="reel__item">
+            <a class="shot" href="assets/images/field/safari-tent-full.jpg" data-fslightbox="field" data-type="image" data-alt="A bed under a canopy in an open-sided safari tent">
+              <figure class="shot__media"><img src="assets/images/field/safari-tent-560.jpg" srcset="assets/images/field/safari-tent-560.jpg 560w, assets/images/field/safari-tent-900.jpg 900w" sizes="(min-width: 64em) 24vw, (min-width: 40em) 40vw, 76vw" width="560" height="747" loading="lazy" alt="A bed under a canopy in an open-sided safari tent"></figure>
+              <p class="shot__place">Mara River camp, Tanzania</p>
+              <p class="shot__note">Eight tents, and nothing between you and the plain.</p>
+            </a>
+          </li>
+          <li class="reel__item">
+            <a class="shot" href="assets/images/field/capri-boats-full.jpg" data-fslightbox="field" data-type="image" data-alt="Boats moored around the Faraglioni rocks off Capri">
+              <figure class="shot__media"><img src="assets/images/field/capri-boats-560.jpg" srcset="assets/images/field/capri-boats-560.jpg 560w, assets/images/field/capri-boats-900.jpg 900w" sizes="(min-width: 64em) 24vw, (min-width: 40em) 40vw, 76vw" width="560" height="747" loading="lazy" alt="Boats moored around the Faraglioni rocks off Capri"></figure>
+              <p class="shot__place">Capri, Italy</p>
+              <p class="shot__note">Lunch is a swim away from here.</p>
+            </a>
+          </li>
+          <li class="reel__item">
+            <a class="shot" href="assets/images/field/ryokan-room-full.jpg" data-fslightbox="field" data-type="image" data-alt="A tatami room with a low table and paper screens">
+              <figure class="shot__media"><img src="assets/images/field/ryokan-room-560.jpg" srcset="assets/images/field/ryokan-room-560.jpg 560w, assets/images/field/ryokan-room-900.jpg 900w" sizes="(min-width: 64em) 24vw, (min-width: 40em) 40vw, 76vw" width="560" height="747" loading="lazy" alt="A tatami room with a low table and paper screens"></figure>
+              <p class="shot__place">Kinosaki Onsen, Japan</p>
+              <p class="shot__note">Dinner arrives at the low table at seven.</p>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="wrap field__controls">
+        <div class="field__progress" aria-hidden="true"><span id="field-bar"></span></div>
+        <div class="stepper">
+          <button class="stepper__button stepper__button--large" id="field-prev" type="button" aria-label="Previous photographs">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="stepper__button stepper__button--large" id="field-next" type="button" aria-label="More photographs">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9.5 5.5 16 12l-6.5 6.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== closing: one full-width photograph and a single invitation ===== -->
+    <section class="closing" aria-labelledby="closing-title">
+      <figure class="closing__media" id="closing-media" aria-hidden="true">
+        <img src="assets/images/closing/serengeti-wide-1100.jpg" srcset="assets/images/closing/serengeti-wide-1100.jpg 1100w, assets/images/closing/serengeti-wide-2000.jpg 2000w" sizes="100vw" width="2000" height="1125" loading="lazy" alt="">
+      </figure>
+      <div class="wrap closing__inner">
+        <h2 class="closing__title" id="closing-title" data-split>Tell us where.<br>We will take care of how.</h2>
+        <p class="closing__text" data-reveal>Every journey starts with an hour of conversation, and there is no charge for it.</p>
+        <a class="button button--light" href="#inquire" data-reveal>Begin an inquiry <svg class="button__icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+    </section>
+
+    <!-- ===== inquire: the form that starts a conversation ===== -->
+    <section class="inquire" id="inquire" aria-labelledby="inquire-title">
+      <div class="wrap inquire__grid">
+        <div class="inquire__copy">
+          <h2 class="display" id="inquire-title" data-split>Begin with a conversation</h2>
+          <p class="lede">Tell us where and roughly when. A planner will reply within one working day to arrange a call.</p>
+          <dl class="contact">
+            <div class="contact__item">
+              <dt>Telephone</dt>
+              <dd>+1 416 555 0142</dd>
+            </div>
+            <div class="contact__item">
+              <dt>Email</dt>
+              <dd>hello@meridian.example</dd>
+            </div>
+            <div class="contact__item">
+              <dt>Studio</dt>
+              <dd>Toronto, by appointment</dd>
+            </div>
+          </dl>
+        </div>
+
+        <form class="form" id="inquiry-form" novalidate>
+          <div class="form__row">
+            <div class="field-group">
+              <label class="field-group__label" for="name">Your name</label>
+              <input class="field-group__input" id="name" name="name" type="text" autocomplete="name" required>
+              <p class="field-group__error" id="name-error" hidden></p>
+            </div>
+            <div class="field-group">
+              <label class="field-group__label" for="email">Email</label>
+              <input class="field-group__input" id="email" name="email" type="email" autocomplete="email" inputmode="email" required>
+              <p class="field-group__error" id="email-error" hidden></p>
+            </div>
+          </div>
+
+          <div class="form__row">
+            <div class="field-group">
+              <label class="field-group__label" for="destination">Destination</label>
+              <select class="field-group__input" id="destination" name="destination">
+                <option value="kyoto">Kyoto, Japan</option>
+                <option value="amalfi">Amalfi Coast, Italy</option>
+                <option value="serengeti">Serengeti, Tanzania</option>
+                <option value="patagonia">Patagonia, Chile</option>
+                <option value="bora-bora">Bora Bora, French Polynesia</option>
+                <option value="iceland">Iceland</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label class="field-group__label" for="when">Month of travel</label>
+              <input class="field-group__input" id="when" name="when" type="text" inputmode="numeric" placeholder="MM/YYYY" autocomplete="off" aria-describedby="when-hint" required>
+              <p class="field-group__error" id="when-error" hidden></p>
+            </div>
+          </div>
+
+          <p class="form__advice" id="when-hint" aria-live="polite" hidden></p>
+
+          <div class="form__row">
+            <div class="field-group">
+              <label class="field-group__label" for="travellers">Travellers</label>
+              <input class="field-group__input" id="travellers" name="travellers" type="number" min="1" max="12" value="2" inputmode="numeric" required>
+              <p class="field-group__error" id="travellers-error" hidden></p>
+            </div>
+            <div class="field-group">
+              <label class="field-group__label" for="budget">Budget each, in US dollars <span class="field-group__optional">(optional)</span></label>
+              <input class="field-group__input" id="budget" name="budget" type="text" inputmode="numeric" placeholder="10,000" autocomplete="off">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-group__label" for="notes">Anything we should know <span class="field-group__optional">(optional)</span></label>
+            <textarea class="field-group__input" id="notes" name="notes" rows="3"></textarea>
+          </div>
+
+          <div class="form__actions">
+            <button class="button" type="submit">Send inquiry</button>
+            <p class="form__small">Demo form for a concept site. Nothing you type leaves your browser.</p>
+          </div>
+        </form>
+
+        <div class="form-done" id="form-done" tabindex="-1" hidden>
+          <h3 class="form-done__title">Inquiry sent</h3>
+          <p class="form-done__text" id="form-done-text"></p>
+          <button class="button button--light" id="form-reset" type="button">Send another inquiry</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== site footer ===== -->
+  <footer class="site-footer">
+    <div class="wrap">
+      <ul class="clocks" id="clocks" aria-label="Local time at each destination">
+        <li class="clocks__item" data-zone="Asia/Tokyo"><span>Kyoto</span><time>00:00</time></li>
+        <li class="clocks__item" data-zone="Europe/Rome"><span>Amalfi Coast</span><time>00:00</time></li>
+        <li class="clocks__item" data-zone="Africa/Dar_es_Salaam"><span>Serengeti</span><time>00:00</time></li>
+        <li class="clocks__item" data-zone="America/Punta_Arenas"><span>Patagonia</span><time>00:00</time></li>
+        <li class="clocks__item" data-zone="Pacific/Tahiti"><span>Bora Bora</span><time>00:00</time></li>
+        <li class="clocks__item" data-zone="Atlantic/Reykjavik"><span>Iceland</span><time>00:00</time></li>
+      </ul>
+
+      <p class="site-footer__mark" id="footer-mark" aria-hidden="true">Meridian</p>
+
+      <div class="site-footer__grid">
+        <p class="site-footer__line">Private journeys to six places, planned by hand in Toronto.</p>
+        <nav aria-label="Footer">
+          <ul class="site-footer__links">
+            <li><a href="#destinations">Destinations</a></li>
+            <li><a href="#journey">Journeys</a></li>
+            <li><a href="#approach">Approach</a></li>
+            <li><a href="#field">Field notes</a></li>
+            <li><a href="#inquire">Inquire</a></li>
+          </ul>
+        </nav>
+        <div class="site-footer__credits">
+          <p>A concept site designed and built by Araik Movsessian, 2026. Meridian is not a real travel company, and the prices and contact details are invented.</p>
+          <p>Photography from <a href="https://unsplash.com" rel="noopener">Unsplash</a> contributors. Coastlines from Natural Earth. Map tiles by Esri.</p>
+          <p>Built with Three.js, GSAP, Lenis, Chart.js, Leaflet, Fullscreen Lightbox and Cleave.js.</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- third-party libraries: seven, each one used in assets/js/script.js
+       three.js             the globe in the hero
+       gsap (three files)   loader, text reveals and scroll animation
+       lenis                smooth scrolling
+       chart.js             the two climate charts
+       leaflet              the route map
+       fullscreen lightbox  full-screen field photographs
+       cleave.js            month and budget formatting in the form -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fslightbox@3.7.4/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cleave.js@1.6.0/dist/cleave.min.js"></script>
+
+  <!-- our own scripts: data first, then behaviour -->
+  <script src="assets/js/world.js"></script>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/script.js"></script>
+</body>
+</html>

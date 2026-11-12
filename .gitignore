@@ -1,0 +1,13 @@
+# dependencies: restored with "npm install"
+node_modules/
+
+# macOS folder metadata
+.DS_Store
+
+# editor and assistant tooling
+.claude/
+.vscode/
+.idea/
+
+# logs
+npm-debug.log*
